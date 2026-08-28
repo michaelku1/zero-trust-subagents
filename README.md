@@ -2,61 +2,81 @@
 
 **Your subagents lie confidently. Verify before you act.**
 
-You split a refactor across 5 subagents, one folder each. Each reports back: *"done, all tests pass."* Their reports are generated text — plausible, evidence-citing, sometimes wrong. Merge on a wrong one and you ship the breakage.
+## The problem
+
+You split work across parallel subagents. Each one reports back: *"done, all tests pass."*
+
+Reports are generated text. They sound right. Sometimes they are wrong.
+
+Act on a wrong report, and you ship the breakage.
+
+## The fix: 3 rules
+
+| # | Rule | Direction | What you do |
+|---|------|-----------|-------------|
+| 1 | **Mark hints** | you → worker | Label every hint you pass down as `UNVERIFIED` |
+| 2 | **Tag claims** | worker → you | Worker tags each claim `[verified: <command>]` or `[assumed]` |
+| 3 | **Check before acting** | report → action | Run one check yourself: grep, run the import, run the tests |
+
+That's the whole framework. One idea behind it: **subagent reports are untrusted input. Check them like you'd check user input.**
+
+## Example
+
+A subagent reports:
+
+> "`validate_session()` is dead code. No callers found. Removed it."
+
+True in its folder. But another folder calls it — through a string:
+
+```python
+ROUTES = {"GET /session/validate": "app.auth:validate_session"}
+```
+
+The worker can't see this. It only read its own slice. **No worker can verify a repo-wide claim.**
+
+The orchestrator runs one check:
+
+```bash
+grep -rn validate_session .
+```
+
+Two seconds. Catch found. Merge saved.
 
 ## Install
 
-Claude Code plugin:
+As a Claude Code plugin:
 
 ```
 /plugin marketplace add michaelku1/evidence-gate
 /plugin install evidence-gate@evidence-gate
 ```
 
-Or copy the skill directly:
+Or copy the skill by hand:
 
 ```bash
-cp -r skills/evidence-gate .claude/skills/     # project-local
 cp -r skills/evidence-gate ~/.claude/skills/   # global
+cp -r skills/evidence-gate .claude/skills/     # this project only
 ```
 
-Not using Claude Code? The same rules as raw prompt text: [`templates/`](templates/).
+Not on Claude Code? Use the raw prompt text in [`templates/`](templates/). It works in any agent stack.
 
-## The three rules
+## Does it actually help?
 
-Agent contexts are trust boundaries. Generated text doesn't cross one without independent verification.
+We tested on live agents before writing the skill. Two findings:
 
-1. **DOWN** — every hint you pass a worker is marked `UNVERIFIED — check against the code`. Your beliefs about the codebase may be stale, and you can't tell which ones; don't let workers echo them back as fact.
-2. **UP** — workers must tag each claim `[verified: <command they ran>]` or `[assumed]`.
-3. **ACT** — before merging, deleting, or editing anything a report told you, run one mechanical check yourself: repo-wide grep, run the import, run the tests.
+1. **Rule 3 held on its own.** Under deadline pressure, the agent still grepped before deleting. Good instinct. The skill locks it in.
+2. **Rule 1 is where discipline broke.** Given unlabeled beliefs, the orchestrator wrote them into worker prompts as *"Known facts"* — including a deprecation that exists nowhere in the code. The docs would have fabricated it. With the skill, the same beliefs went down marked `UNVERIFIED`. No fabrication.
 
-## Why: a worker can't verify a repo-wide claim
-
-A subagent reports: *"`validate_session()` is dead code — no callers found — removed it."* True inside its assigned folder. But the function is called from a route table in **another worker's slice**, via a dotted string that import-analysis never sees:
-
-```python
-ROUTES = {"GET /session/validate": "app.auth:validate_session"}
-```
-
-Each worker sees only its own context, so *no worker can ever verify a repo-wide claim*. One `grep -rn validate_session .` by the orchestrator (2 seconds) catches it before the merge does.
-
-## Pressure-tested, not vibes
-
-We baseline-tested these rules on live agents before writing the skill ([details](examples/caught-in-the-wild.md)):
-
-- The **ACT** rule held even without the skill in our runs — the agent grepped before deleting under deadline pressure. Good; the skill locks that in.
-- The **DOWN** rule is where discipline evaporated: given unlabeled beliefs, the orchestrator wrote *"Known facts to reflect accurately: validate_session() is deprecated — mark it deprecated"* into worker prompts. The code has no deprecation marker — the docs would have fabricated one. With the skill, the same input was demoted to UNVERIFIED hints and the fabrication vector disappeared.
-
-The asymmetry is the whole trick: generating work is expensive, checking a claim is cheap and mechanical. Subagent reports are untrusted input crossing a trust boundary — taint that only clears with a check.
+Details: [`examples/caught-in-the-wild.md`](examples/caught-in-the-wild.md)
 
 ## What's in the box
 
-```
-skills/evidence-gate/SKILL.md      # the Claude Code skill (the deliverable)
-templates/worker-prompt.md         # fill-in dispatch template, any agent stack
-templates/orchestrator-checklist.md# the ACT-line checks
-examples/caught-in-the-wild.md     # real catches from testing this skill
-```
+| File | What it is |
+|------|-----------|
+| `skills/evidence-gate/SKILL.md` | The Claude Code skill |
+| `templates/worker-prompt.md` | Dispatch template for any agent stack |
+| `templates/orchestrator-checklist.md` | The before-you-act checklist |
+| `examples/caught-in-the-wild.md` | Two real catches |
 
 ## License
 

@@ -8,24 +8,28 @@ license: MIT
 
 ## Overview
 
-Agent contexts are trust boundaries. Everything that crosses one — your hints going down, worker claims coming up — is generated text: plausible, confident, sometimes wrong.
+Subagents run in separate contexts. Everything they send you is generated text. It sounds right. It can be wrong.
 
-**Rule: generated text does not cross a trust boundary without independent verification.**
+**Rule: generated text never crosses between contexts without a check.**
 
 ## The three rules
 
-**1. DOWN — hints are marked UNVERIFIED.**
-Never present your beliefs about the codebase as facts in a worker prompt. You cannot tell which of your beliefs are stale; the code is the only source of truth.
+### 1. Mark hints (you → worker)
+
+Never state your beliefs about the codebase as facts in a worker prompt. Some of your beliefs are stale. You can't tell which. The code is the only source of truth.
+
+Use this exact framing:
 
 ```text
 Context (UNVERIFIED — verify against the code before using; if the code
 disagrees, trust the code and report the contradiction): <your hints>
 ```
 
-Never write "Known facts:", "For accuracy:", or instruct workers to "reflect" your beliefs in their output.
+Never write "Known facts:". Never tell workers to "reflect" your beliefs in their output.
 
-**2. UP — claims carry evidence status.**
-Every worker prompt must mandate this report format:
+### 2. Tag claims (worker → you)
+
+Put this in every worker prompt:
 
 ```text
 Do NOT report anything as fact you did not check in this session.
@@ -34,23 +38,33 @@ Report anything that contradicts the provided context as a finding —
 do not silently apply it or silently ignore it.
 ```
 
-**3. ACT — one mechanical check before acting.**
-Before deleting, merging, or editing anything based on a worker claim, run one mechanical check yourself against ground truth: repo-wide `grep -rn <symbol>`, run the import, run the tests, `ls` the path. A worker structurally cannot verify repo-wide claims — its "no callers found" covers only its slice and misses dynamic/string-based references. Claims tagged `[assumed]` are never actionable.
+### 3. Check before acting (report → action)
 
-When one claim proves wrong, sweep all other worker outputs for the same error class.
+Before you delete, merge, or edit anything based on a worker claim: run one mechanical check yourself.
 
-## Rationalization table
+- "X is unused" → `grep -rn "X" .` (whole repo)
+- "imports fine" → run the import
+- "tests pass" → run the tests
+- "path is wrong" → `ls` the path
 
-| Excuse | Reality |
-|---|---|
-| "These are facts I know about this codebase" | You can't distinguish current from stale knowledge. Unlabeled beliefs get written into docs as fabricated facts (observed: "mark it deprecated" for a function with no deprecation marker in code). |
-| "The worker already verified it" | Slice-local verification. "No imports found" misses string dispatch, reflection, config references. |
-| "Deadline — just apply it" | The check is one grep: seconds vs shipping a breakage. |
-| "All tests pass" | Whose tests, run where? Run them yourself and check they cover the changed path. |
+Why: a worker only sees its own slice. "No callers found" misses string dispatch, reflection, and config references. **No worker can verify a repo-wide claim.**
+
+`[assumed]` claims are never actionable.
+
+One claim proved wrong? Sweep all other worker outputs for the same error class.
+
+## Excuses and answers
+
+| Excuse | Answer |
+|--------|--------|
+| "These are facts I know" | You can't tell current from stale. Mark them UNVERIFIED. Unlabeled beliefs become fabricated docs. |
+| "The worker already verified it" | It verified its slice. Only you can check the whole repo. |
+| "Deadline — just apply it" | The check is one grep. Seconds vs shipping a breakage. |
+| "All tests pass" | Whose tests? Run them yourself. Check they cover the change. |
 
 ## Red flags — STOP
 
-- "Known facts:" (or any unmarked belief) in a dispatch prompt
-- Acting on a claim tagged `[assumed]` — or not tagged at all
+- "Known facts:" in a dispatch prompt
+- Acting on an `[assumed]` claim — or an untagged one
 - Deleting or renaming a symbol without one repo-wide grep
 - A worker report with no evidence tags

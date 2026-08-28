@@ -1,17 +1,28 @@
-# Orchestrator checklist — the ACT line
+# Orchestrator checklist
 
-Before acting on any worker claim (delete, merge, edit, update docs):
+Run this before acting on any worker claim. Acting = delete, merge, edit, or update docs.
 
-1. **Treat every finding as a hypothesis** — including ones tagged `[verified]`. Worker verification is slice-local; only you can check repo-wide.
-2. **Run one mechanical check against ground truth:**
+## 1. Every finding is a hypothesis
 
-   | Claim type | Check |
-   |---|---|
-   | "X is unused / dead code" | `grep -rn "X" .` (whole repo — catches string dispatch, reflection, configs) |
-   | "module imports fine" | `python -c "import module"` (or equivalent) |
-   | "all tests pass" | run the suite yourself; confirm it covers the changed path |
-   | "file/path is wrong in docs" | `ls` the path; grep for what the live code actually loads |
+Even `[verified]` ones. The worker verified its slice. Only you can check the whole repo.
 
-3. **`[assumed]` claims are never actionable.** Send them back or verify them yourself.
-4. **One wrong claim implies siblings.** When a claim proves wrong, sweep every other worker's output for the same error class before closing.
-5. **Close with a mechanical audit** of any canonical docs you touched: path-existence check, residual-reference grep.
+## 2. Run one mechanical check
+
+| Worker says | You run |
+|-------------|---------|
+| "X is unused / dead code" | `grep -rn "X" .` — whole repo. Catches string dispatch, reflection, configs. |
+| "module imports fine" | Run the import: `python -c "import module"` |
+| "all tests pass" | Run the suite yourself. Check it covers the change. |
+| "docs point at the wrong file" | `ls` the path. Grep for what the live code actually loads. |
+
+## 3. Never act on `[assumed]`
+
+Send it back, or verify it yourself.
+
+## 4. One wrong claim implies siblings
+
+A claim proved wrong? Sweep every other worker's output for the same error class before closing.
+
+## 5. Audit what you touched
+
+Finished editing canonical docs? Do a final pass: check paths exist, grep for leftover references.
