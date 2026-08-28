@@ -66,7 +66,7 @@ Skills load on demand — installing puts the skill's name and description in th
 
 Three ways to check:
 
-1. `/plugin` lists it as installed; typing `/zero-` autocompletes the skill.
+1. `/plugin` lists it as installed; typing `/zero-` autocompletes the skill. Note the plugin-install command is namespaced: `/zero-trust-subagents:zero-trust-subagents`. (The bare `/zero-trust-subagents` only exists if you copied the skill by hand.)
 2. **Behavioral test** (30 seconds): run the canned prompt in [`tests/self-check.md`](tests/self-check.md). If the dispatch prompts come back with `UNVERIFIED` hints and the `[verified:]/[assumed]` format, the rules are in context.
 3. **Hard guarantee:** add one line to your project's `CLAUDE.md` — *"Always apply zero-trust-subagents when spawning subagents."* This makes application deterministic instead of description-matched.
 

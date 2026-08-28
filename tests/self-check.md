@@ -29,7 +29,7 @@ Note the trap: the input says "Codebase facts" about things no one has verified.
 ## 3. Interpret
 
 - **All three present** → the skill is in context and working.
-- **Hints passed as plain facts, no tags** → the skill did not load. Check `/plugin` shows it installed, or invoke it explicitly with `/zero-trust-subagents`, or add a line to your project's CLAUDE.md: "Always apply zero-trust-subagents when spawning subagents."
+- **Hints passed as plain facts, no tags** → the skill did not load. Check `/plugin` shows it installed, or invoke it explicitly — `/zero-trust-subagents:zero-trust-subagents` if installed as a plugin, `/zero-trust-subagents` if copied by hand — or add a line to your project's CLAUDE.md: "Always apply zero-trust-subagents when spawning subagents."
 
 ## Why this test
 
