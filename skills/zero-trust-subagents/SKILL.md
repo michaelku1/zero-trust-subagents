@@ -6,28 +6,22 @@ license: MIT
 
 # Zero-Trust Subagents
 
-## Overview
-
 Subagents run in separate contexts. Everything they send you is generated text. It sounds right. It can be wrong.
 
-**Rule: generated text never crosses between contexts without a check.**
+**Never let generated text cross between contexts without a check.**
 
-## The three rules
+## Rule 1 — Mark hints (you → worker)
 
-### 1. Mark hints (you → worker)
-
-Never state your beliefs about the codebase as facts in a worker prompt. Some of your beliefs are stale. You can't tell which. The code is the only source of truth.
-
-Use this exact framing:
+Your beliefs about the codebase may be stale. Don't state them as facts. Pass them like this:
 
 ```text
 Context (UNVERIFIED — verify against the code before using; if the code
 disagrees, trust the code and report the contradiction): <your hints>
 ```
 
-Never write "Known facts:". Never tell workers to "reflect" your beliefs in their output.
+Never write "Known facts:".
 
-### 2. Tag claims (worker → you)
+## Rule 2 — Tag claims (worker → you)
 
 Put this in every worker prompt:
 
@@ -38,33 +32,29 @@ Report anything that contradicts the provided context as a finding —
 do not silently apply it or silently ignore it.
 ```
 
-### 3. Check before acting (report → action)
+## Rule 3 — Check before acting (report → action)
 
-Before you delete, merge, or edit anything based on a worker claim: run one mechanical check yourself.
+Before you delete, merge, or edit based on a worker claim, run one check yourself:
 
-- "X is unused" → `grep -rn "X" .` (whole repo)
-- "imports fine" → run the import
-- "tests pass" → run the tests
-- "path is wrong" → `ls` the path
+| Worker says | You run |
+|-------------|---------|
+| "X is unused" | `grep -rn "X" .` |
+| "imports fine" | run the import |
+| "tests pass" | run the tests |
+| "path is wrong" | `ls` the path |
 
-Why: a worker only sees its own slice. "No callers found" misses string dispatch, reflection, and config references. **No worker can verify a repo-wide claim.**
+A worker only sees its slice. It cannot verify a repo-wide claim. Never act on `[assumed]`. One claim wrong? Check the other workers' claims for the same mistake.
 
-`[assumed]` claims are never actionable.
-
-One claim proved wrong? Sweep all other worker outputs for the same error class.
-
-## Excuses and answers
+## Excuses
 
 | Excuse | Answer |
 |--------|--------|
-| "These are facts I know" | You can't tell current from stale. Mark them UNVERIFIED. Unlabeled beliefs become fabricated docs. |
-| "The worker already verified it" | It verified its slice. Only you can check the whole repo. |
-| "Deadline — just apply it" | The check is one grep. Seconds vs shipping a breakage. |
-| "All tests pass" | Whose tests? Run them yourself. Check they cover the change. |
+| "I know this codebase" | Some of that knowledge is stale. Mark it UNVERIFIED. |
+| "The worker already verified it" | Only its slice. You check the whole repo. |
+| "No time" | The check is one grep. |
 
 ## Red flags — STOP
 
 - "Known facts:" in a dispatch prompt
-- Acting on an `[assumed]` claim — or an untagged one
+- Acting on an `[assumed]` or untagged claim
 - Deleting or renaming a symbol without one repo-wide grep
-- A worker report with no evidence tags
