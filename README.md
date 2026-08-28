@@ -68,6 +68,7 @@ Three ways to check:
 
 1. `/plugin` lists it as installed; typing `/zero-` autocompletes the skill. Note the plugin-install command is namespaced: `/zero-trust-subagents:zero-trust-subagents`. (The bare `/zero-trust-subagents` only exists if you copied the skill by hand.)
 2. **Behavioral test** (30 seconds): run the canned prompt in [`tests/self-check.md`](tests/self-check.md). If the dispatch prompts come back with `UNVERIFIED` hints and the `[verified:]/[assumed]` format, the rules are in context.
+   For the stronger question — does the skill change the *outcome*, not just the prompt wording — run the A/B regression in [`tests/ab-regression.md`](tests/ab-regression.md): a seeded trap, two arms, framing as the only variable.
 3. **Hard guarantee:** add one line to your project's `CLAUDE.md` — *"Always apply zero-trust-subagents when spawning subagents."* This makes application deterministic instead of description-matched.
 
 ## Does it actually help?
@@ -79,6 +80,8 @@ We tested on live agents before writing the skill. Two findings:
 
 Details: [`examples/caught-in-the-wild.md`](examples/caught-in-the-wild.md)
 
+Since then, a controlled A/B run (2026-08-28) confirmed it end-to-end: with identical parallel workers and a seeded false premise, the control arm reached a unanimous confidently-wrong "safe to delete" verdict, while the treatment arm caught the trap three independent ways. Protocol and recorded results: [`tests/ab-regression.md`](tests/ab-regression.md).
+
 ## What's in the box
 
 | File | What it is |
@@ -88,6 +91,7 @@ Details: [`examples/caught-in-the-wild.md`](examples/caught-in-the-wild.md)
 | `templates/orchestrator-checklist.md` | The before-you-act checklist |
 | `examples/caught-in-the-wild.md` | Two real catches |
 | `tests/self-check.md` | 30-second test that the skill is loaded |
+| `tests/ab-regression.md` | A/B regression: control vs treatment on a seeded trap |
 
 ## License
 
