@@ -1,10 +1,10 @@
 ---
-name: evidence-gate
+name: zero-trust-subagents
 description: Use when dispatching parallel subagents for coding, refactoring, documentation, or audit work, or when about to act on a subagent's report — deleting code, merging changes, or editing docs based on claims you did not check yourself.
 license: MIT
 ---
 
-# Evidence Gate
+# Zero-Trust Subagents
 
 ## Overview
 

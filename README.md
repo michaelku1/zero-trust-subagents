@@ -1,4 +1,4 @@
-# evidence-gate
+# zero-trust-subagents
 
 **Your subagents lie confidently. Verify before you act.**
 
@@ -47,15 +47,15 @@ Two seconds. Catch found. Merge saved.
 As a Claude Code plugin:
 
 ```
-/plugin marketplace add michaelku1/evidence-gate
-/plugin install evidence-gate@evidence-gate
+/plugin marketplace add michaelku1/zero-trust-subagents
+/plugin install zero-trust-subagents@zero-trust-subagents
 ```
 
 Or copy the skill by hand:
 
 ```bash
-cp -r skills/evidence-gate ~/.claude/skills/   # global
-cp -r skills/evidence-gate .claude/skills/     # this project only
+cp -r skills/zero-trust-subagents ~/.claude/skills/   # global
+cp -r skills/zero-trust-subagents .claude/skills/     # this project only
 ```
 
 Not on Claude Code? Use the raw prompt text in [`templates/`](templates/). It works in any agent stack.
@@ -73,7 +73,7 @@ Details: [`examples/caught-in-the-wild.md`](examples/caught-in-the-wild.md)
 
 | File | What it is |
 |------|-----------|
-| `skills/evidence-gate/SKILL.md` | The Claude Code skill |
+| `skills/zero-trust-subagents/SKILL.md` | The Claude Code skill |
 | `templates/worker-prompt.md` | Dispatch template for any agent stack |
 | `templates/orchestrator-checklist.md` | The before-you-act checklist |
 | `examples/caught-in-the-wild.md` | Two real catches |

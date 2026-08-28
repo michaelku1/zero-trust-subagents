@@ -1,5 +1,5 @@
 {
-  "name": "evidence-gate",
+  "name": "zero-trust-subagents",
   "description": "Zero-trust discipline for subagent orchestration: verify generated claims before acting on them.",
   "owner": {
     "name": "michaelku1",
@@ -7,7 +7,7 @@
   },
   "plugins": [
     {
-      "name": "evidence-gate",
+      "name": "zero-trust-subagents",
       "source": "./",
       "description": "Zero-trust for your subagents: verify generated claims before acting on them.",
       "version": "0.1.0",

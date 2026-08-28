@@ -1,14 +1,14 @@
 {
-  "name": "evidence-gate",
-  "displayName": "Evidence Gate",
+  "name": "zero-trust-subagents",
+  "displayName": "Zero-Trust Subagents",
   "description": "Zero-trust for your subagents: hints go down marked UNVERIFIED, claims come up tagged [verified]/[assumed], and nothing gets acted on without one mechanical check.",
   "version": "0.1.0",
   "author": {
     "name": "michaelku1",
     "url": "https://github.com/michaelku1"
   },
-  "homepage": "https://github.com/michaelku1/evidence-gate",
-  "repository": "https://github.com/michaelku1/evidence-gate",
+  "homepage": "https://github.com/michaelku1/zero-trust-subagents",
+  "repository": "https://github.com/michaelku1/zero-trust-subagents",
   "license": "MIT",
   "keywords": ["subagents", "orchestration", "verification", "hallucination", "multi-agent"]
 }
