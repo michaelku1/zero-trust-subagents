@@ -60,6 +60,16 @@ cp -r skills/zero-trust-subagents .claude/skills/     # this project only
 
 Not on Claude Code? Use the raw prompt text in [`templates/`](templates/). It works in any agent stack.
 
+## How do I know it's working?
+
+Skills load on demand — installing puts the skill's name and description in the agent's context; the rules load when the skill is invoked (by you, or by Claude when the task matches).
+
+Three ways to check:
+
+1. `/plugin` lists it as installed; typing `/zero-` autocompletes the skill.
+2. **Behavioral test** (30 seconds): run the canned prompt in [`tests/self-check.md`](tests/self-check.md). If the dispatch prompts come back with `UNVERIFIED` hints and the `[verified:]/[assumed]` format, the rules are in context.
+3. **Hard guarantee:** add one line to your project's `CLAUDE.md` — *"Always apply zero-trust-subagents when spawning subagents."* This makes application deterministic instead of description-matched.
+
 ## Does it actually help?
 
 We tested on live agents before writing the skill. Two findings:
@@ -77,6 +87,7 @@ Details: [`examples/caught-in-the-wild.md`](examples/caught-in-the-wild.md)
 | `templates/worker-prompt.md` | Dispatch template for any agent stack |
 | `templates/orchestrator-checklist.md` | The before-you-act checklist |
 | `examples/caught-in-the-wild.md` | Two real catches |
+| `tests/self-check.md` | 30-second test that the skill is loaded |
 
 ## License
 
